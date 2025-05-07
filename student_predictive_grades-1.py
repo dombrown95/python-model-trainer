@@ -12,10 +12,9 @@ def initialise_globals():
     df = None
     model = None
 
-
-
 # Reads a .csv or excel file and loads it into a pandas dataframe and returns an appropriate message.
 def load_dataset():
+    global df
     file_path = filedialog.askopenfilename(filetypes=[("CSV files", "*.csv"), ("Excel files", "*.xlsx;*.xls")])
     if file_path:
         try:
@@ -54,6 +53,8 @@ def make_predictions(model, df, features):
         result_text.insert(tk.END, f"Predictions:\n{predictions}")
     except Exception as e:
         messagebox.showerror("Error", f"Failed to make predictions: {e}")
+
+initialise_globals()
 
 # Initialises the main tktinter window and sets its title.
 root = tk.Tk()
