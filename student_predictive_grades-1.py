@@ -6,7 +6,12 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score
 from sklearn.preprocessing import LabelEncoder
 
-#add funtion
+# Function to initialise and manage global variables
+def initialise_globals():
+    global df, model
+    df = None
+    model = None
+
 
 
 # Reads a .csv or excel file and loads it into a pandas dataframe and returns an appropriate message.
@@ -82,4 +87,3 @@ result_text.pack(pady=10)
 
 # Starts the tkinter main event loop to display the GUI.
 root.mainloop()
-
