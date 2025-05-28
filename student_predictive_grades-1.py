@@ -8,24 +8,45 @@ from sklearn.preprocessing import LabelEncoder
 
 # Function to initialise and manage global variables
 def initialise_globals():
-    global df, model
+    global df, model, df_predict
     df = None
     model = None
+    df_predict = None
 
-# Reads a .csv or excel file and loads it into a pandas dataframe and returns an appropriate message.
+# Reads .csv or excel file(s) and loads them into a pandas dataframe and returns an appropriate message.
 def load_dataset():
     global df
+    file_paths = filedialog.askopenfilenames(filetypes=[("CSV files", "*.csv"), ("Excel files", "*.xlsx;*.xls")])
+    if file_paths:
+        dfs = []
+        try:
+            for path in file_paths:
+                if path.endswith('.csv'):
+                    dfs.append(pd.read_csv(path))
+                else:
+                    dfs.append(pd.read_excel(path, engine='openpyxl'))
+            df = pd.concat(dfs, ignore_index=True)
+            messagebox.showinfo("Success", "Training datasets loaded and combined.")
+            return df
+        except Exception as e:
+            messagebox.showerror("Error", f"Failed to load dataset: {e}")
+    return None
+
+
+# Function that reads the target .csv or excel file and loads it into the pandas dataframe
+def load_prediction_dataset():
+    global df_predict
     file_path = filedialog.askopenfilename(filetypes=[("CSV files", "*.csv"), ("Excel files", "*.xlsx;*.xls")])
     if file_path:
         try:
             if file_path.endswith('.csv'):
-                df = pd.read_csv(file_path)
+                df_predict = pd.read_csv(file_path)
             else:
-                df = pd.read_excel(file_path, engine='openpyxl')
-            messagebox.showinfo("Success", "Dataset loaded successfully *but did you check the script!")
-            return df
+                df_predict = pd.read_excel(file_path, engine='openpyxl')
+            messagebox.showinfo("Success", "Prediction dataset loaded successfully.")
+            return df_predict
         except Exception as e:
-            messagebox.showerror("Error", f"Failed to load dataset: {e}")
+            messagebox.showerror("Error", f"Failed to load prediction dataset: {e}")
     return None
 
 # Function that trains a random forest model
@@ -64,9 +85,9 @@ def train_model(df, features, target):
     return None
 
 # Function that uses the trained model to make predictions on new input data and displays the results in the GUI.
-def make_predictions(model, df, features):
+def make_predictions(model, df_predict, features):
     try:
-        X_new = df[features].copy()
+        X_new = df_predict[features].copy()
 
         # Encodes categorical features
         for col in X_new.columns:
@@ -93,6 +114,10 @@ root.title("Student Predictive Grades")
 load_button = tk.Button(root, text="Load Dataset", command=lambda: load_dataset())
 load_button.pack(pady=10)
 
+# Creates a button that allows the user to load a prediction dataset file.
+predict_data_button = tk.Button(root, text="Load Prediction File", command=load_prediction_dataset)
+predict_data_button.pack(pady=5)
+
 # Creates a label and input field where the user specifies the feature column names (seperated by commas).
 tk.Label(root, text="Features (comma-separated):").pack()
 features_entry = tk.Entry(root)
@@ -108,7 +133,7 @@ train_button = tk.Button(root, text="Train Model", command=lambda: train_model(d
 train_button.pack(pady=10)
 
 # Creates a button to trigger prediction using the trained model and selected features.
-predict_button = tk.Button(root, text="Make Predictions", command=lambda: make_predictions(model, df, [col.strip() for col in features_entry.get().split(',')],))
+predict_button = tk.Button(root, text="Make Predictions", command=lambda: make_predictions(model, df_predict, [col.strip() for col in features_entry.get().split(',')]))
 predict_button.pack(pady=10)
 
 # Creates a text box to display model prediction results in the GUI.
