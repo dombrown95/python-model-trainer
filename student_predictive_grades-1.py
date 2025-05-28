@@ -30,9 +30,28 @@ def load_dataset():
 
 # Function that trains a random forest model
 def train_model(df, features, target):
+    global model
     try:
+        if df is None:
+            messagebox.showerror("Error", "Please load a dataset first.")
+            return None
+        if not features or not target:
+            messagebox.showerror("Error", "Please specify both features and target.")
+            return None
+        
+        # Drop rows where target or any feature contains missing values
         X = df[features]
         y = df[target]
+        combined = pd.concat([X, y], axis=1).dropna()
+        X = combined[features]
+        y = combined[target]
+
+        # Encodes categorical features (e.g. gender)
+        for col in X.columns:
+            if X[col].dtype == 'object':
+                le = LabelEncoder()
+                X[col] = le.fit_transform(X[col].astype(str))
+
         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
         model = RandomForestRegressor()
         model.fit(X_train, y_train)
@@ -75,11 +94,11 @@ target_entry = tk.Entry(root)
 target_entry.pack(pady=5)
 
 # Creates a button to trigger model training using the selected dataset, features and target.
-train_button = tk.Button(root, text="Train Model", command=lambda: train_model(df, features_entry.get().split(','), target_entry.get()))
+train_button = tk.Button(root, text="Train Model", command=lambda: train_model(df, [col.strip() for col in features_entry.get().split(',')], target_entry.get()))
 train_button.pack(pady=10)
 
 # Creates a button to trigger prediction using the trained model and selected features.
-predict_button = tk.Button(root, text="Make Predictions", command=lambda: make_predictions(model, df, features_entry.get().split(',')))
+predict_button = tk.Button(root, text="Make Predictions", command=lambda: make_predictions(model, df, [col.strip() for col in features_entry.get().split(',')],))
 predict_button.pack(pady=10)
 
 # Creates a text box to display model prediction results in the GUI.
