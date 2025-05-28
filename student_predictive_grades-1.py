@@ -32,6 +32,19 @@ def load_dataset():
             messagebox.showerror("Error", f"Failed to load dataset: {e}")
     return None
 
+# Function to clean the loaded dataset(s) by removing rows with missing values
+def clean_dataset():
+    global df
+    if df is None:
+        messagebox.showerror("Error", "Please load a dataset first.")
+        return
+
+    original_rows = len(df)
+    df.dropna(inplace=True)
+    cleaned_rows = len(df)
+
+    removed = original_rows - cleaned_rows
+    messagebox.showinfo("Cleaned", f"Training dataset(s) cleaned.\nRows removed: {removed}")
 
 # Function that reads the target .csv or excel file and loads it into the pandas dataframe
 def load_prediction_dataset():
@@ -111,11 +124,14 @@ root = tk.Tk()
 root.title("Student Predictive Grades")
 
 # Creates a button that allows the user to load a dataset file.
-load_button = tk.Button(root, text="Load Dataset", command=lambda: load_dataset())
+load_button = tk.Button(root, text="Load Training Dataset(s)", command=lambda: load_dataset())
 load_button.pack(pady=10)
 
+clean_button = tk.Button(root, text="Clean Training Dataset(s)", command=clean_dataset)
+clean_button.pack(pady=5)
+
 # Creates a button that allows the user to load a prediction dataset file.
-predict_data_button = tk.Button(root, text="Load Prediction File", command=load_prediction_dataset)
+predict_data_button = tk.Button(root, text="Load Test Dataset", command=load_prediction_dataset)
 predict_data_button.pack(pady=5)
 
 # Creates a label and input field where the user specifies the feature column names (seperated by commas).
