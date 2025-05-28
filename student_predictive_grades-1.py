@@ -110,9 +110,17 @@ def make_predictions(model, df_predict, features):
 
         predictions = model.predict(X_new)
         result_text.delete(1.0, tk.END)
-        result_text.insert(tk.END, f"Predictions:\n{predictions}")
-        for i, pred in enumerate(predictions):
-            result_text.insert(tk.END, f"Student {i+1}: Predicted Grade = {pred:.2f}\n")
+        if 'student_id' not in df_predict.columns:
+            messagebox.showerror("Error", "'student_id' column not found in test dataset.")
+            return
+
+        student_ids = df_predict['student_id'].tolist()
+
+        result_text.delete(1.0, tk.END)
+        result_text.insert(tk.END, "Predicted Grades by Student ID:\n\n")
+
+        for sid, pred in zip(student_ids, predictions):
+            result_text.insert(tk.END, f"Student ID {sid}: Predicted Grade = {pred:.2f}\n")
             
     except Exception as e:
         messagebox.showerror("Error", f"Failed to make predictions: {e}")
