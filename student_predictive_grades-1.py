@@ -66,10 +66,20 @@ def train_model(df, features, target):
 # Function that uses the trained model to make predictions on new input data and displays the results in the GUI.
 def make_predictions(model, df, features):
     try:
-        X_new = df[features]
+        X_new = df[features].copy()
+
+        # Encodes categorical features
+        for col in X_new.columns:
+            if X_new[col].dtype == 'object':
+                le = LabelEncoder()
+                X_new[col] = le.fit_transform(X_new[col].astype(str))
+
         predictions = model.predict(X_new)
         result_text.delete(1.0, tk.END)
         result_text.insert(tk.END, f"Predictions:\n{predictions}")
+        for i, pred in enumerate(predictions):
+            result_text.insert(tk.END, f"Student {i+1}: Predicted Grade = {pred:.2f}\n")
+            
     except Exception as e:
         messagebox.showerror("Error", f"Failed to make predictions: {e}")
 
