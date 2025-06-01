@@ -50,18 +50,22 @@ def clean_dataset():
 
     original_rows = len(df)
 
-    # Drops rows where age is set to 'unknown'
+    # Convert and impute 'age' with median value
     if 'age' in df.columns:
-        df = df[df['age'] != 'unknown']
+        df['age'] = pd.to_numeric(df['age'], errors='coerce')
+        median_age = df['age'].median()
+        df['age'].fillna(median_age, inplace=True)
 
-    # Drop rows where 'study_hours_per_day' is 'varies'
+    # Convert and impute 'study_hours_per_day' with median value
     if 'study_hours_per_day' in df.columns:
-        df = df[df['study_hours_per_day'] != 'varies']
+        df['study_hours_per_day'] = pd.to_numeric(df['study_hours_per_day'], errors='coerce')
+        median_study = df['study_hours_per_day'].median()
+        df['study_hours_per_day'].fillna(median_study, inplace=True)
 
-    # Drops rows with other missing values.
+    # Drop remaining rows with missing values
     df.dropna(inplace=True)
 
-    # Caps exam_score values at 100.
+    # Cap exam_score values
     if 'exam_score' in df.columns:
         df.loc[df['exam_score'] > 100, 'exam_score'] = 100
 
@@ -94,15 +98,19 @@ def clean_test_dataset():
 
     original_rows = len(df_predict)
 
-    # Drops rows where age is set to 'unknown'
+    # Convert and impute 'age' with median value
     if 'age' in df_predict.columns:
-        df_predict = df_predict[df_predict['age'] != 'unknown']
+        df_predict['age'] = pd.to_numeric(df_predict['age'], errors='coerce')
+        median_age = df_predict['age'].median()
+        df_predict['age'].fillna(median_age, inplace=True)
 
-    # Drop rows where 'study_hours_per_day' is 'varies'
+    # Convert and impute 'study_hours_per_day' with median value
     if 'study_hours_per_day' in df_predict.columns:
-        df_predict = df_predict[df_predict['study_hours_per_day'] != 'varies']
+        df_predict['study_hours_per_day'] = pd.to_numeric(df_predict['study_hours_per_day'], errors='coerce')
+        median_study = df_predict['study_hours_per_day'].median()
+        df_predict['study_hours_per_day'].fillna(median_study, inplace=True)
 
-    # Drop rows with other missing values
+    # Drop remaining rows with missing values
     df_predict.dropna(inplace=True)
 
     cleaned_rows = len(df_predict)
@@ -143,6 +151,8 @@ def train_model(df, features, target):
         return model
     except Exception as e:
         messagebox.showerror("Error", f"Failed to train model: {e}")
+        if df.isnull().any().any() or (df.select_dtypes(include='object').isin(['unknown', 'varies']).any().any()):
+            messagebox.showerror("Error", "Please clean the training dataset before training the model.")
     return None
 
 # Function that uses the trained model to make predictions on new input data and displays the results in the GUI.
