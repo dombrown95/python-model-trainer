@@ -32,7 +32,7 @@ def load_dataset():
             messagebox.showerror("Error", f"Failed to load dataset: {e}")
     return None
 
-# Function to clean the loaded dataset(s) by removing rows with missing values
+# Function to clean the loaded training dataset(s)
 def clean_dataset():
     global df
     if df is None:
@@ -41,7 +41,7 @@ def clean_dataset():
 
     original_rows = len(df)
 
-    # Drops rows where age is set to 'unknown'.
+    # Drops rows where age is set to 'unknown'
     if 'age' in df.columns:
         df = df[df['age'] != 'unknown']
 
@@ -75,6 +75,31 @@ def load_prediction_dataset():
         except Exception as e:
             messagebox.showerror("Error", f"Failed to load prediction dataset: {e}")
     return None
+
+# Function to clean the loaded test dataset
+def clean_test_dataset():
+    global df_predict
+    if df_predict is None:
+        messagebox.showerror("Error", "Please load a test dataset first.")
+        return
+
+    original_rows = len(df_predict)
+
+    # Drops rows where age is set to 'unknown'
+    if 'age' in df_predict.columns:
+        df_predict = df_predict[df_predict['age'] != 'unknown']
+
+    # Drop rows where 'study_hours_per_day' is 'varies'
+    if 'study_hours_per_day' in df_predict.columns:
+        df_predict = df_predict[df_predict['study_hours_per_day'] != 'varies']
+
+    # Drop rows with other missing values
+    df_predict.dropna(inplace=True)
+
+    cleaned_rows = len(df_predict)
+    removed = original_rows - cleaned_rows
+
+    messagebox.showinfo("Cleaned", f"Test dataset cleaned.\nRows removed: {removed}")
 
 # Function that trains a random forest model
 def train_model(df, features, target):
@@ -146,16 +171,21 @@ initialise_globals()
 root = tk.Tk()
 root.title("Student Predictive Grades")
 
-# Creates a button that allows the user to load a dataset file.
+# Creates a button that allows the user to load training dataset files.
 load_button = tk.Button(root, text="Load Training Dataset(s)", command=lambda: load_dataset())
 load_button.pack(pady=10)
 
+# Creates a button that allows the user to clean training dataset files.
 clean_button = tk.Button(root, text="Clean Training Dataset(s)", command=clean_dataset)
 clean_button.pack(pady=5)
 
-# Creates a button that allows the user to load a prediction dataset file.
+# Creates a button that allows the user to load a test dataset file.
 predict_data_button = tk.Button(root, text="Load Test Dataset", command=load_prediction_dataset)
 predict_data_button.pack(pady=5)
+
+# Creates a button that allows the user to clean a test dataset file.
+clean_test_button = tk.Button(root, text="Clean Test Dataset", command=clean_test_dataset)
+clean_test_button.pack(pady=5)
 
 # Creates a label and input field where the user specifies the feature column names (seperated by commas).
 tk.Label(root, text="Features (comma-separated):").pack()
