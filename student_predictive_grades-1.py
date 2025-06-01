@@ -40,9 +40,23 @@ def clean_dataset():
         return
 
     original_rows = len(df)
-    df.dropna(inplace=True)
-    cleaned_rows = len(df)
 
+    # Drops rows where age is set to 'unknown'.
+    if 'age' in df.columns:
+        df = df[df['age'] != 'unknown']
+
+    # Drop rows where 'study_hours_per_day' is 'varies'
+    if 'study_hours_per_day' in df.columns:
+        df = df[df['study_hours_per_day'] != 'varies']
+
+    # Drops rows with other missing values.
+    df.dropna(inplace=True)
+
+    # Caps exam_score values at 100.
+    if 'exam_score' in df.columns:
+        df.loc[df['exam_score'] > 100, 'exam_score'] = 100
+
+    cleaned_rows = len(df)
     removed = original_rows - cleaned_rows
     messagebox.showinfo("Cleaned", f"Training dataset(s) cleaned.\nRows removed: {removed}")
 
@@ -101,8 +115,9 @@ def train_model(df, features, target):
 def make_predictions(model, df_predict, features):
     try:
         X_new = df_predict[features].copy()
+        X_new.dropna(inplace=True) # Drops rows with missing values in the test dataset.
 
-        # Encodes categorical features
+        # Encodes categorical features.
         for col in X_new.columns:
             if X_new[col].dtype == 'object':
                 le = LabelEncoder()
