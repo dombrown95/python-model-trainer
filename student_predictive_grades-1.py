@@ -112,12 +112,8 @@ def train_model(df, features, target):
             messagebox.showerror("Error", "Please specify both features and target.")
             return None
         
-        # Drop rows where target or any feature contains missing values
         X = df[features]
         y = df[target]
-        combined = pd.concat([X, y], axis=1).dropna()
-        X = combined[features]
-        y = combined[target]
 
         # Encodes categorical features (e.g. gender)
         for col in X.columns:
