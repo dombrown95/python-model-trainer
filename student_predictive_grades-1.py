@@ -6,6 +6,15 @@ from sklearn.ensemble import RandomForestRegressor
 from sklearn.metrics import r2_score
 from sklearn.preprocessing import LabelEncoder
 
+CATEGORICAL_FEATURES = [
+    'gender',
+    'part_time_job',
+    'diet_quality',
+    'parental_education_level',
+    'internet_quality',
+    'extracurricular_participation'
+]
+
 # Function to initialise and manage global variables
 def initialise_globals():
     global df, model, df_predict
@@ -112,12 +121,16 @@ def train_model(df, features, target):
             messagebox.showerror("Error", "Please specify both features and target.")
             return None
         
+        # Drop rows where target or any feature contains missing values
         X = df[features]
         y = df[target]
+        combined = pd.concat([X, y], axis=1).dropna()
+        X = combined[features]
+        y = combined[target]
 
         # Encodes categorical features (e.g. gender)
-        for col in X.columns:
-            if X[col].dtype == 'object':
+        for col in CATEGORICAL_FEATURES:
+            if col in X.columns:
                 le = LabelEncoder()
                 X[col] = le.fit_transform(X[col].astype(str))
 
@@ -136,11 +149,13 @@ def train_model(df, features, target):
 def make_predictions(model, df_predict, features):
     try:
         X_new = df_predict[features].copy()
-        X_new.dropna(inplace=True) # Drops rows with missing values in the test dataset.
+
+        # Drops rows with missing values in the test dataset.
+        X_new.dropna(inplace=True) 
 
         # Encodes categorical features.
-        for col in X_new.columns:
-            if X_new[col].dtype == 'object':
+        for col in CATEGORICAL_FEATURES:
+            if col in X_new.columns:
                 le = LabelEncoder()
                 X_new[col] = le.fit_transform(X_new[col].astype(str))
 
